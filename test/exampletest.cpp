@@ -8,12 +8,12 @@ TEST_CASE("Example test", "[example]")
 
 TEST_CASE("Example test2", "[example]")
 {
-    REQUIRE(false);
+    REQUIRE(true);
 }
 
 TEST_CASE("Example test3", "[example]")
 {
-    REQUIRE(false);
+    REQUIRE(true);
 }
 
 

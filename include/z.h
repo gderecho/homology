@@ -46,9 +46,9 @@ public:
         return Z{left.value_ - right.value_};
     }
 
-    friend constexpr Z operator*(Z,Z)
+    friend constexpr Z operator*(Z left, Z right)
     {
-        return Z{0};
+        return Z{left.value_ * right.value_};
     }
 
     friend constexpr bool operator==(Z left, Z right)

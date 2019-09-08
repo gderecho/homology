@@ -25,8 +25,16 @@ target_include_directories(z_test PUBLIC test)
 target_include_directories(z_test PUBLIC include)
 set_target_properties(z_test PROPERTIES LINKER_LANGUAGE CXX)
 
+file(GLOB MATRIXTEST_SOURCES test/matrix_test/*.cpp)
+
+add_executable(matrix_test ${MATRIXTEST_SOURCES})
+target_include_directories(matrix_test PUBLIC test)
+target_include_directories(matrix_test PUBLIC include)
+set_target_properties(matrix_test PROPERTIES LINKER_LANGUAGE CXX)
+
 
 
 
 enable_testing()
 add_test(NAME HomologyTest COMMAND z_test)
+add_test(NAME MatrixTest COMMAND matrix_test)

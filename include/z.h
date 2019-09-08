@@ -26,24 +26,24 @@ public:
     Z &operator=(Z &&) = default;
 
 
-    friend constexpr Z operator+(Z) 
+    friend constexpr Z operator+(Z z) 
     {
-        return Z{0};
+        return z;
     }
 
-    friend constexpr Z operator-(Z) 
+    friend constexpr Z operator-(Z z) 
     {
-        return Z{0};
+        return Z{-z.value_};
     }
 
-    friend constexpr Z operator+(Z,Z)
+    friend constexpr Z operator+(Z left, Z right)
     {
-        return Z{0};
+        return Z{left.value_ + right.value_};
     }
     
-    friend constexpr Z operator-(Z,Z)
+    friend constexpr Z operator-(Z left, Z right)
     {
-        return Z{0};
+        return Z{left.value_ - right.value_};
     }
 
     friend constexpr Z operator*(Z,Z)

@@ -18,8 +18,8 @@ TEST_CASE("Unary - test 2", "[z]")
 
 TEST_CASE("Unary - test 3", "[z]")
 {
-    Z<11> z {10};
-    REQUIRE(-1 == -z);
+    Z<11> z {1};
+    REQUIRE(10 == -z);
 }
 
 TEST_CASE("Unary - test 4", "[z]")

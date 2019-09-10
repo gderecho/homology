@@ -5,6 +5,7 @@
 #include <vector>
 #include <initializer_list>
 #include <algorithm>
+#include <iterator>
 
 #include <ring.h>
 
@@ -30,8 +31,88 @@ public:
     Matrix &operator=(const Matrix &) = default;
     Matrix &operator=(Matrix &&) = default;
 
-    size_t rowdim() const {return rowdim_;}
-    size_t coldim() const {return coldim_;}
+    size_t constexpr rowdim() const {return rowdim_;}
+    size_t constexpr coldim() const {return coldim_;}
+
+private:
+    template<typename ptype>
+    class iterator_base_ {
+    private:
+        ptype p_;
+        size_t x_;
+        size_t y_;
+
+    public:
+        // traits
+        using diference_type = size_t;
+        using value_type = R;
+        using pointer = const R*;
+        using reference =  const R&;
+        using iterator_category = std::random_access_iterator_tag;
+
+        // functionality
+        iterator_base_(ptype p) 
+            : p_{p}, x_{0}, y_{0}  {}
+
+        iterator_base_(ptype p, size_t x, size_t y) 
+            : p_{p}, x_{x}, y_{y}  {}
+
+        iterator_base_ &operator++() 
+        {
+            if(y_ + 1 < p_->coldim()) {
+                ++y_;
+                return *this;
+            }
+            y_ = 0;
+            ++x_;
+            return *this;
+        }
+
+        iterator_base_ operator++(int) = delete;
+        iterator_base_ operator--(int) = delete;
+
+        iterator_base_ &operator--() 
+        {
+            if(y_ != 0) {
+                --y_;
+                return *this;
+            }
+            y_ = p_->coldim() - 1;
+            --x_;
+            return *this;
+        }
+
+        bool operator==(iterator_base_ other) const
+        {
+            return x_ == other.x_ && y_ == other.y_;
+        }
+        bool operator!=(iterator_base_ other) const
+        {
+            return !(*this == other);
+        }
+        reference operator*() const {return p_->data_[x_][y_];}
+        pointer operator->() const {return &(p_->data_[x_][y_]);}
+    };
+
+    typedef iterator_base_<Matrix*> iterator;
+    typedef iterator_base_<const Matrix*> const_iterator;
+
+public:
+    iterator begin() {return this;}
+    iterator end() {return iterator(this,rowdim(),0);}
+    const_iterator begin() const {return this;}
+    const_iterator end() const {return const_iterator(this,rowdim(),0);}
+    
+    friend const_iterator begin(const Matrix &m)
+    {
+        return m.begin();
+    }
+    friend const_iterator end(const Matrix &m)
+    {
+        return m.end();
+    }
+
+public:
 
     /*
      * friend Matrix operator+
@@ -41,23 +122,34 @@ public:
      */
     friend Matrix operator+(const Matrix &left, const Matrix &right)
     {
-        size_t rowdim = left.rowdim();
-        size_t coldim = left.coldim();
         vec2d sum {};
-        sum.reserve(rowdim);
-        for(size_t i = 0; i < rowdim; ++i) {
+        sum.reserve(left.rowdim());
+        for(size_t i = 0; i < left.rowdim(); ++i) {
             std::vector<R> temp{};
-            temp.reserve(coldim);
+            temp.reserve(left.coldim());
 
-            std::transform(begin(left.data_[i]),
-                    end(left.data_[i]),
-                    begin(right.data_[i]),
-                    back_inserter(temp),
+            std::transform(std::begin(left.data_[i]),
+                    std::end(left.data_[i]),
+                    std::begin(right.data_[i]),
+                    std::back_inserter(temp),
                     [](R a, R b) {return a+b;});
 
             sum.emplace_back(std::move(temp));
         }
-        return sum;
+        return Matrix(std::move(sum));
+    }
+
+    friend R multiply_row_by_column(
+            const Matrix &left, 
+            const Matrix &right,
+            size_t i,
+            size_t j)
+    {
+        R total = 0;
+        for(size_t h = 0; h < left.coldim(); ++h) {
+            total = total + left.data_[i][h] * right.data_[h][j];
+        }
+        return total;
     }
 
     friend Matrix operator*(const Matrix &left, const Matrix &right)
@@ -69,11 +161,8 @@ public:
             data.emplace_back(std::move(temp));
             data[i].reserve(right.coldim());
             for(size_t j = 0; j < right.coldim(); ++j) {
-                R total = 0;
-                for(size_t h = 0; h < left.coldim(); ++h) {
-                    total = total + left.data_[i][h] * right.data_[h][j];
-                }
-                data[i].push_back(total);
+                R value = multiply_row_by_column(left,right,i,j);
+                data[i].push_back(value);
             }
         }
         return Matrix{std::move(data)};
@@ -83,7 +172,7 @@ public:
     {
         return left.data_ == right.data_;
     }
-
+    
 };
 
 template<typename R>
@@ -100,7 +189,8 @@ inline Matrix<R>::Matrix(vec2d vec)
       coldim_{rowdim_ > 0 ? data_[0].size() : 0} 
 {}
 
-template<typename R> bool operator!=(const Matrix<R> &left, 
+template<typename R> 
+inline bool operator!=(const Matrix<R> &left, 
         const Matrix<R> &right)
 {
     return !(left == right);

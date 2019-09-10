@@ -36,5 +36,5 @@ set_target_properties(matrix_test PROPERTIES LINKER_LANGUAGE CXX)
 
 
 enable_testing()
-add_test(NAME HomologyTest COMMAND z_test)
+add_test(NAME ZTest COMMAND z_test)
 add_test(NAME MatrixTest COMMAND matrix_test)

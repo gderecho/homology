@@ -62,7 +62,21 @@ public:
 
     friend Matrix operator*(const Matrix &left, const Matrix &right)
     {
-        return {{0}};
+        vec2d data;
+        data.reserve(left.rowdim());
+        for(size_t i = 0; i < left.rowdim(); ++i) {
+            std::vector<R> temp {};
+            data.emplace_back(std::move(temp));
+            data[i].reserve(right.coldim());
+            for(size_t j = 0; j < right.coldim(); ++j) {
+                R total = 0;
+                for(size_t h = 0; h < left.coldim(); ++h) {
+                    total = total + left.data_[i][h] * right.data_[h][j];
+                }
+                data[i].push_back(total);
+            }
+        }
+        return Matrix{std::move(data)};
     }
 
     friend bool operator==(const Matrix &left, const Matrix &right)
@@ -70,10 +84,6 @@ public:
         return left.data_ == right.data_;
     }
 
-    friend bool operator!=(const Matrix &left, const Matrix &right)
-    {
-        return false;
-    }
 };
 
 template<typename R>
@@ -90,6 +100,11 @@ inline Matrix<R>::Matrix(vec2d vec)
       coldim_{rowdim_ > 0 ? data_[0].size() : 0} 
 {}
 
+template<typename R> bool operator!=(const Matrix<R> &left, 
+        const Matrix<R> &right)
+{
+    return !(left == right);
+}
 
 } // namespace homology
 #endif // HOMOLOGY_Matrix_H_ 

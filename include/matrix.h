@@ -1,10 +1,12 @@
-#ifndef HOMOLOGY_Matrix_H_
-#define HOMOLOGY_Matrix_H_
+#ifndef HOMOLOGY_MATRIX_H_
+#define HOMOLOGY_MATRIX_H_
 
 #include <ostream>
 #include <vector>
 #include <initializer_list>
 #include <algorithm>
+
+#include <ring.h>
 
 namespace homology {
 
@@ -50,7 +52,7 @@ public:
             std::transform(begin(left.data_[i]),
                     end(left.data_[i]),
                     begin(right.data_[i]),
-                    std::back_inserter(temp),
+                    back_inserter(temp),
                     [](R a, R b) {return a+b;});
 
             sum.emplace_back(std::move(temp));
@@ -58,12 +60,20 @@ public:
         return sum;
     }
 
+    friend Matrix operator*(const Matrix &left, const Matrix &right)
+    {
+        return {{0}};
+    }
+
     friend bool operator==(const Matrix &left, const Matrix &right)
     {
         return left.data_ == right.data_;
     }
 
-
+    friend bool operator!=(const Matrix &left, const Matrix &right)
+    {
+        return false;
+    }
 };
 
 template<typename R>

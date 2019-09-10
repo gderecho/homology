@@ -21,6 +21,9 @@ private:
     size_t rowdim_;
     size_t coldim_;
 
+    template<typename ptype>
+    class iterator_base_; 
+
 public:
     Matrix(ilist);
     Matrix(vec2d);
@@ -33,6 +36,14 @@ public:
 
     size_t constexpr rowdim() const {return rowdim_;}
     size_t constexpr coldim() const {return coldim_;}
+
+    typedef iterator_base_<Matrix*> iterator;
+    typedef iterator_base_<const Matrix*> const_iterator;
+
+    iterator begin() {return this;}
+    iterator end() {return iterator(this,rowdim(),0);}
+    const_iterator begin() const {return this;}
+    const_iterator end() const {return const_iterator(this,rowdim(),0);}
 
 private:
     template<typename ptype>
@@ -51,66 +62,23 @@ private:
         using iterator_category = std::random_access_iterator_tag;
 
         // functionality
-        iterator_base_(ptype p) 
-            : p_{p}, x_{0}, y_{0}  {}
+        iterator_base_(ptype p);
+        iterator_base_(ptype p, size_t x, size_t y);
 
-        iterator_base_(ptype p, size_t x, size_t y) 
-            : p_{p}, x_{x}, y_{y}  {}
-
-        iterator_base_ &operator++() 
-        {
-            if(y_ + 1 < p_->coldim()) {
-                ++y_;
-                return *this;
-            }
-            y_ = 0;
-            ++x_;
-            return *this;
-        }
-
+        iterator_base_ &operator++();
+        iterator_base_ &operator--();
         iterator_base_ operator++(int) = delete;
         iterator_base_ operator--(int) = delete;
 
-        iterator_base_ &operator--() 
-        {
-            if(y_ != 0) {
-                --y_;
-                return *this;
-            }
-            y_ = p_->coldim() - 1;
-            --x_;
-            return *this;
-        }
+        bool operator==(iterator_base_ other) const;
+        bool operator!=(iterator_base_ other) const;
 
-        bool operator==(iterator_base_ other) const
-        {
-            return x_ == other.x_ && y_ == other.y_;
-        }
-        bool operator!=(iterator_base_ other) const
-        {
-            return !(*this == other);
-        }
         reference operator*() const {return p_->data_[x_][y_];}
         pointer operator->() const {return &(p_->data_[x_][y_]);}
     };
 
-    typedef iterator_base_<Matrix*> iterator;
-    typedef iterator_base_<const Matrix*> const_iterator;
 
 public:
-    iterator begin() {return this;}
-    iterator end() {return iterator(this,rowdim(),0);}
-    const_iterator begin() const {return this;}
-    const_iterator end() const {return const_iterator(this,rowdim(),0);}
-    
-    friend const_iterator begin(const Matrix &m)
-    {
-        return m.begin();
-    }
-    friend const_iterator end(const Matrix &m)
-    {
-        return m.end();
-    }
 
 public:
 
@@ -189,12 +157,97 @@ inline Matrix<R>::Matrix(vec2d vec)
       coldim_{rowdim_ > 0 ? data_[0].size() : 0} 
 {}
 
+template<typename R>
+inline typename Matrix<R>::const_iterator begin(const Matrix<R> &m)
+{
+    return m.begin();
+}
+
+template<typename R>
+inline typename Matrix<R>::const_iterator end(const Matrix<R> &m)
+{
+    return m.end();
+}
+
+template<typename R>
+inline typename 
+Matrix<R>::iterator begin(Matrix<R> &m)
+{
+    return m.begin();
+}
+
+template<typename R>
+inline typename 
+Matrix<R>::iterator end(Matrix<R> &m)
+{
+    return m.end();
+}
+
 template<typename R> 
 inline bool operator!=(const Matrix<R> &left, 
         const Matrix<R> &right)
 {
     return !(left == right);
 }
+
+template<typename R>
+template<typename ptype>
+inline Matrix<R>::iterator_base_<ptype>::iterator_base_(ptype p)
+    : p_{p}, x_{0}, y_{0}  {}
+
+template<typename R>
+template<typename ptype>
+inline Matrix<R>::iterator_base_<ptype>
+    ::iterator_base_(ptype p, size_t x, size_t y)
+    : p_{p}, x_{x}, y_{y}  {}
+
+template<typename R>
+template<typename ptype>
+inline typename Matrix<R>::template iterator_base_<ptype> & 
+    Matrix<R>::iterator_base_<ptype>::operator--()
+{
+    if(y_ != 0) {
+        --y_;
+        return *this;
+    }
+    y_ = p_->coldim() - 1;
+    --x_;
+    return *this;
+}
+
+template<typename R>
+template<typename ptype>
+inline typename Matrix<R>::template iterator_base_<ptype> & 
+    Matrix<R>::iterator_base_<ptype>::operator++() 
+{
+    if(y_ + 1 < p_->coldim()) {
+        ++y_;
+        return *this;
+    }
+    y_ = 0;
+    ++x_;
+    return *this;
+}
+
+template<typename R>
+template<typename ptype>
+inline bool Matrix<R>
+    ::iterator_base_<ptype>
+    ::operator==(iterator_base_ other) const
+{
+    return x_ == other.x_ && y_ == other.y_;
+}
+
+template<typename R>
+template<typename ptype>
+inline bool Matrix<R>
+    ::iterator_base_<ptype>
+    ::operator!=(iterator_base_ other) const
+{
+    return !(*this == other);
+}
+
+
 
 } // namespace homology
 #endif // HOMOLOGY_Matrix_H_ 

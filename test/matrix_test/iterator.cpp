@@ -90,14 +90,14 @@ TEST_CASE("Transform test", "[matrix]")
         {3,1,10}
     };
 
-    std::vector<Z<11>> result; // Note 1d array
+    std::vector<Z<11>> result; // Note 1-dimensional
 
     std::transform(
             begin(m1),
             end(m1),
             begin(m2),
             std::back_inserter(result),
-            [&result](Z<11> a, Z<11> b){return (a+b);}
+            [](Z<11> a, Z<11> b){return (a+b);}
             );
 
     Matrix<Z<11>> sum {m1+m2};

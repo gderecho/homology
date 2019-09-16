@@ -80,8 +80,6 @@ private:
 
 public:
 
-public:
-
     /*
      * friend Matrix operator+
      * 

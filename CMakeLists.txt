@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-Wall -Wextra -Werror -O3)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_compile_options(-Weverything)
-elseif("{CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_compile_options(-fconcepts)
     add_compile_options(-pedantic -Wcast-align -Wcast-qual
                     -Wctor-dtor-privacy -Wdisabled-optimization
